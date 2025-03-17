@@ -51,8 +51,8 @@ export async function POST(req: NextRequest) {
     try {
       // Convert history to the format expected by Gemini API
       const formattedHistory =
-        history && history.length > 0
-          ? history.slice(-2)
+        history && false && history.length > 0
+          ? history
             .map((item: HistoryItem) => {
               return {
                 role: item.role,
