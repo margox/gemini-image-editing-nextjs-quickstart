@@ -37,9 +37,11 @@ export async function POST(req: NextRequest) {
       generationConfig: {
         temperature: 1,
         topP: 0.95,
+
         topK: 40,
         // @ts-expect-error - Gemini API JS is missing this type
         responseModalities: ["Text", "Image"],
+        aspectRatio: "9:16",
       },
     });
 
@@ -50,38 +52,38 @@ export async function POST(req: NextRequest) {
       const formattedHistory =
         history && history.length > 0
           ? history
-              .map((item: HistoryItem) => {
-                return {
-                  role: item.role,
-                  parts: item.parts
-                    .map((part: HistoryPart) => {
-                      if (part.text) {
-                        return { text: part.text };
+            .map((item: HistoryItem) => {
+              return {
+                role: item.role,
+                parts: item.parts
+                  .map((part: HistoryPart) => {
+                    if (part.text) {
+                      return { text: part.text };
+                    }
+                    if (part.image && item.role === "user") {
+                      const imgParts = part.image.split(",");
+                      if (imgParts.length > 1) {
+                        return {
+                          inlineData: {
+                            data: imgParts[1],
+                            mimeType: part.image.includes("image/png")
+                              ? "image/png"
+                              : "image/jpeg",
+                          },
+                        };
                       }
-                      if (part.image && item.role === "user") {
-                        const imgParts = part.image.split(",");
-                        if (imgParts.length > 1) {
-                          return {
-                            inlineData: {
-                              data: imgParts[1],
-                              mimeType: part.image.includes("image/png")
-                                ? "image/png"
-                                : "image/jpeg",
-                            },
-                          };
-                        }
-                      }
-                      return { text: "" };
-                    })
-                    .filter((part) => Object.keys(part).length > 0), // Remove empty parts
-                };
-              })
-              .filter((item: FormattedHistoryItem) => item.parts.length > 0) // Remove items with no parts
+                    }
+                    return { text: "" };
+                  })
+                  .filter((part) => Object.keys(part).length > 0), // Remove empty parts
+              };
+            })
+            .filter((item: FormattedHistoryItem) => item.parts.length > 0) // Remove items with no parts
           : [];
 
       // Create a chat session with the formatted history
       const chat = model.startChat({
-        history: formattedHistory,
+        history: formattedHistory.slice(-1),
       });
 
       // Prepare the current message parts
