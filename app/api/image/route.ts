@@ -39,6 +39,7 @@ export async function POST(req: NextRequest) {
         topP: 0.95,
 
         topK: 40,
+
         // @ts-expect-error - Gemini API JS is missing this type
         responseModalities: ["Text", "Image"],
         // aspectRatio: "9:16",
@@ -51,7 +52,7 @@ export async function POST(req: NextRequest) {
       // Convert history to the format expected by Gemini API
       const formattedHistory =
         history && history.length > 0
-          ? history
+          ? history.slice(-1)
             .map((item: HistoryItem) => {
               return {
                 role: item.role,
@@ -83,7 +84,7 @@ export async function POST(req: NextRequest) {
 
       // Create a chat session with the formatted history
       const chat = model.startChat({
-        history: formattedHistory.slice(-1),
+        history: formattedHistory
       });
 
       // Prepare the current message parts
