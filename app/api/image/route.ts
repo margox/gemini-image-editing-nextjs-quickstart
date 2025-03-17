@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
         topK: 40,
         // @ts-expect-error - Gemini API JS is missing this type
         responseModalities: ["Text", "Image"],
-        aspectRatio: "9:16",
+        // aspectRatio: "9:16",
       },
     });
 
